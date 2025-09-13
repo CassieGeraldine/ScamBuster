@@ -10,11 +10,14 @@ import { db } from "@/lib/firebase"
 import { doc, getDoc, setDoc } from "firebase/firestore"
 import { useLanguage } from "@/contexts/language-context"
 import { LanguageSelector } from "@/components/language-selector"
+import { CyberMemesCarousel } from "@/components/cyber-memes-carousel"
+import { DailyTipsAndAlerts } from "@/components/daily-tips-and-alerts"
 
 export function Dashboard() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [username, setUsername] = useState("")
   const [inputName, setInputName] = useState("")
+  const [isLearnMoreExpanded, setIsLearnMoreExpanded] = useState(false)
   const userId = "demoUser" // Replace with real user ID if you have auth
 
   // Fetch username from Firestore on mount
@@ -124,7 +127,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Recent Activity & Tips */}
+        {/* Recent Activity & Enhanced Memes Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
@@ -155,21 +158,36 @@ export function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("dailySecurityTip")}</CardTitle>
-              <CardDescription>{t("dailyTipDescription")}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="p-4 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">{t("verifyBeforeClick")}</h4>
-                <p className="text-sm text-muted-foreground mb-3">{t("verifyTipContent")}</p>
-                <Button size="sm" variant="outline">
-                  {t("learnMore")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Enhanced Cyber Memes & Tips Section */}
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("dailySecurityTip")}</CardTitle>
+                <CardDescription>{t("dailyTipDescription")}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CyberMemesCarousel
+                  language={
+                    language === 'english' ? 'en' :
+                    language === 'isizulu' ? 'zu' :
+                    language === 'isixhosa' ? 'xh' : 'en'
+                  }
+                />
+
+                <div className="mt-4">
+                  <DailyTipsAndAlerts
+                    language={
+                      language === 'english' ? 'en' :
+                      language === 'isizulu' ? 'zu' :
+                      language === 'isixhosa' ? 'xh' : 'en'
+                    }
+                    isExpanded={isLearnMoreExpanded}
+                    onToggle={() => setIsLearnMoreExpanded(!isLearnMoreExpanded)}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
     </div>
