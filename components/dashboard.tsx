@@ -5,11 +5,38 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Shield, Trophy, Zap } from "lucide-react"
+import { useEffect, useState } from "react"
+import { db } from "@/lib/firebase"
+import { doc, getDoc, setDoc } from "firebase/firestore"
 import { useLanguage } from "@/contexts/language-context"
 import { LanguageSelector } from "@/components/language-selector"
 
 export function Dashboard() {
   const { t } = useLanguage()
+  const [username, setUsername] = useState("")
+  const [inputName, setInputName] = useState("")
+  const userId = "demoUser" // Replace with real user ID if you have auth
+
+  // Fetch username from Firestore on mount
+  useEffect(() => {
+    async function fetchUsername() {
+      const userRef = doc(db, "users", userId)
+      const userSnap = await getDoc(userRef)
+      if (userSnap.exists()) {
+        setUsername(userSnap.data().username || "")
+      }
+    }
+    fetchUsername()
+  }, [])
+
+  // Update username in Firestore
+  async function handleChangeUsername() {
+    if (!inputName.trim()) return
+    const userRef = doc(db, "users", userId)
+    await setDoc(userRef, { username: inputName }, { merge: true })
+    setUsername(inputName)
+    setInputName("")
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -42,8 +69,23 @@ export function Dashboard() {
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-foreground mb-2">{t("welcomeBack")}</h2>
+
+          <h2 className="text-3xl font-bold text-foreground mb-2">
+            {t("welcomeBack")}{username ? `, ${username}` : ""}
+          </h2>
           <p className="text-muted-foreground text-lg">{t("continueJourney")}</p>
+          <div className="mt-4 flex gap-2 items-center">
+            <input
+              type="text"
+              value={inputName}
+              onChange={e => setInputName(e.target.value)}
+              placeholder="Enter your name"
+              className="border rounded px-2 py-1"
+            />
+            <Button size="sm" onClick={handleChangeUsername}>
+              Change Name
+            </Button>
+          </div>
         </div>
 
         {/* Progress Overview */}
