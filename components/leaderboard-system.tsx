@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { db } from "@/lib/firebase"
+import { collection, getDocs, doc, updateDoc, onSnapshot } from "firebase/firestore"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Trophy, Medal, Crown, Star, Wifi, Gift, Users, Award, Zap } from "lucide-react"
@@ -27,60 +29,40 @@ interface Reward {
   claimed: boolean
 }
 
-const leaderboardData: LeaderboardUser[] = [
-  {
-    id: "1",
-    name: "Sarah Chen",
-    avatar: "/diverse-woman-avatar.png",
-    points: 2850,
-    rank: 1,
-    badges: 15,
-    streak: 12,
-    country: "ZA",
-  },
-  {
-    id: "2",
-    name: "Michael Okafor",
-    avatar: "/man-avatar.png",
-    points: 2720,
-    rank: 2,
-    badges: 13,
-    streak: 8,
-    country: "ZA",
-  },
-  {
-    id: "3",
-    name: "Alex Johnson",
-    avatar: "/diverse-person-avatars.png",
-    points: 2650,
-    rank: 3,
-    badges: 12,
-    streak: 15,
-    country: "ZA",
-  },
-  {
-    id: "4",
-    name: "Priya Patel",
-    avatar: "/woman-avatar-2.png",
-    points: 2480,
-    rank: 4,
-    badges: 11,
-    streak: 6,
-    country: "ZA",
-  },
-  {
-    id: "5",
-    name: "David Williams",
-    avatar: "/man-avatar-2.png",
-    points: 2350,
-    rank: 5,
-    badges: 10,
-    streak: 9,
-    country: "ZA",
-  },
-]
+export function LeaderboardSystem() {
+  const [activeTab, setActiveTab] = useState("leaderboard")
+  const [timeframe, setTimeframe] = useState("weekly")
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([])
 
-const badgesData = [
+  // Fetch leaderboard data from Firestore
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "leaderboard"), (snapshot) => {
+      const data: LeaderboardUser[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LeaderboardUser))
+      // Sort by points descending and assign ranks
+      data.sort((a, b) => b.points - a.points)
+      data.forEach((user, idx) => user.rank = idx + 1)
+      setLeaderboardData(data)
+    })
+    return () => unsub()
+  }, [])
+
+// Function to update user points in Firestore
+async function updateUserPoints(userId: string, points: number) {
+  const userRef = doc(db, "leaderboard", userId)
+  await updateDoc(userRef, { points })
+}
+
+const badgesData: Array<{
+  id: string
+  name: string
+  description: string
+  icon: string
+  rarity: "epic" | "rare" | "common" | "legendary"
+  points: number
+  earned: boolean
+  progress?: number
+  maxProgress?: number
+}> = [
   {
     id: "1",
     name: "Phishing Expert",
@@ -198,15 +180,11 @@ const rarityColors = {
   legendary: "bg-yellow-100 text-yellow-800 border-yellow-300",
 }
 
-const rankIcons = {
-  1: <Crown className="w-6 h-6 text-yellow-500" />,
-  2: <Medal className="w-6 h-6 text-gray-400" />,
-  3: <Medal className="w-6 h-6 text-amber-600" />,
+const rankIcons: Record<string, JSX.Element> = {
+  "1": <Crown className="w-6 h-6 text-yellow-500" />,
+  "2": <Medal className="w-6 h-6 text-gray-400" />,
+  "3": <Medal className="w-6 h-6 text-amber-600" />,
 }
-
-export function LeaderboardSystem() {
-  const [activeTab, setActiveTab] = useState("leaderboard")
-  const [timeframe, setTimeframe] = useState("weekly")
 
   const currentUser = {
     points: 1250,
@@ -215,12 +193,14 @@ export function LeaderboardSystem() {
     streak: 5,
   }
 
-  const getRarityColor = (rarity: string) => {
+  const getRarityColor = (rarity: keyof typeof rarityColors) => {
     return rarityColors[rarity] || "bg-gray-100 text-gray-800 border-gray-300"
   }
 
   const getRankIcon = (rank: number) => {
-    return rankIcons[rank] || <span className="w-6 h-6 flex items-center justify-center text-sm font-bold">{rank}</span>
+    return rankIcons[String(rank)] || (
+      <span className="w-6 h-6 flex items-center justify-center text-sm font-bold">{rank}</span>
+    )
   }
 
   const claimReward = (rewardId: string) => {
@@ -359,15 +339,15 @@ export function LeaderboardSystem() {
                   <div className="text-center">
                     <div className="w-16 h-16 bg-gray-200 rounded-full mb-2 mx-auto overflow-hidden">
                       <img
-                        src={leaderboardData[1].avatar || "/placeholder.svg"}
-                        alt={leaderboardData[1].name}
+                        src={leaderboardData[1]?.avatar || "/placeholder.svg"}
+                        alt={leaderboardData[1]?.name || "User"}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="bg-gray-100 p-4 rounded-lg h-20 flex flex-col justify-center">
                       <Medal className="w-6 h-6 text-gray-400 mx-auto mb-1" />
-                      <div className="font-semibold text-sm">{leaderboardData[1].name}</div>
-                      <div className="text-xs text-muted-foreground">{leaderboardData[1].points} pts</div>
+                      <div className="font-semibold text-sm">{leaderboardData[1]?.name || "User"}</div>
+                      <div className="text-xs text-muted-foreground">{leaderboardData[1]?.points ?? 0} pts</div>
                     </div>
                   </div>
 
@@ -375,15 +355,15 @@ export function LeaderboardSystem() {
                   <div className="text-center">
                     <div className="w-20 h-20 bg-yellow-200 rounded-full mb-2 mx-auto overflow-hidden border-4 border-yellow-400">
                       <img
-                        src={leaderboardData[0].avatar || "/placeholder.svg"}
-                        alt={leaderboardData[0].name}
+                        src={leaderboardData[0]?.avatar || "/placeholder.svg"}
+                        alt={leaderboardData[0]?.name || "User"}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="bg-yellow-100 p-4 rounded-lg h-24 flex flex-col justify-center">
                       <Crown className="w-8 h-8 text-yellow-500 mx-auto mb-1" />
-                      <div className="font-bold">{leaderboardData[0].name}</div>
-                      <div className="text-sm text-muted-foreground">{leaderboardData[0].points} pts</div>
+                      <div className="font-bold">{leaderboardData[0]?.name || "User"}</div>
+                      <div className="text-sm text-muted-foreground">{leaderboardData[0]?.points ?? 0} pts</div>
                     </div>
                   </div>
 
@@ -391,15 +371,15 @@ export function LeaderboardSystem() {
                   <div className="text-center">
                     <div className="w-16 h-16 bg-amber-200 rounded-full mb-2 mx-auto overflow-hidden">
                       <img
-                        src={leaderboardData[2].avatar || "/placeholder.svg"}
-                        alt={leaderboardData[2].name}
+                        src={leaderboardData[2]?.avatar || "/placeholder.svg"}
+                        alt={leaderboardData[2]?.name || "User"}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="bg-amber-100 p-4 rounded-lg h-20 flex flex-col justify-center">
                       <Medal className="w-6 h-6 text-amber-600 mx-auto mb-1" />
-                      <div className="font-semibold text-sm">{leaderboardData[2].name}</div>
-                      <div className="text-xs text-muted-foreground">{leaderboardData[2].points} pts</div>
+                      <div className="font-semibold text-sm">{leaderboardData[2]?.name || "User"}</div>
+                      <div className="text-xs text-muted-foreground">{leaderboardData[2]?.points ?? 0} pts</div>
                     </div>
                   </div>
                 </div>
@@ -430,6 +410,10 @@ export function LeaderboardSystem() {
                       <div className="text-right">
                         <div className="font-bold text-primary">{user.points}</div>
                         <div className="text-xs text-muted-foreground">points</div>
+                        {/* Example button to add points for demonstration */}
+                        <Button size="sm" variant="outline" onClick={() => updateUserPoints(user.id, user.points + 10)}>
+                          +10 pts
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -499,8 +483,7 @@ export function LeaderboardSystem() {
                   <div className="flex items-center justify-between">
                     <div className="text-3xl">{badge.icon}</div>
                     <span
-                      className={getRarityColor(badge.rarity)}
-                      className="flex items-center gap-2 rounded-lg px-3 py-1"
+                      className={`${getRarityColor(badge.rarity)} flex items-center gap-2 rounded-lg px-3 py-1`}
                     >
                       {badge.rarity}
                     </span>

@@ -74,62 +74,71 @@ export function ScamDetector() {
     setIsScanning(true)
     setScanResult(null)
 
-    // Simulate scanning delay
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    if (type === "url") {
+      try {
+        const response = await fetch("https://api.stalkphish.io/v2/scan", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // If you have an API key: "x-api-key": "YOUR_API_KEY"
+          },
+          body: JSON.stringify({ url: content })
+        })
+        const data = await response.json()
+        console.debug("StalkPhish API response:", data)
 
-    // Mock scan results based on content
+        // Map StalkPhish response to ScanResult
+        const result: ScanResult = {
+          type,
+          content,
+          riskLevel:
+            data.status === "malicious"
+              ? "dangerous"
+              : data.status === "suspicious"
+              ? "suspicious"
+              : "safe",
+          score: typeof data.score === "number" ? data.score : (data.risk_score || 0),
+          threats:
+            Array.isArray(data.threats) && data.threats.length > 0
+              ? data.threats
+              : data.status === "malicious"
+              ? ["Phishing detected", ...(data.indicators || [])]
+              : [],
+          recommendations:
+            Array.isArray(data.recommendations) && data.recommendations.length > 0
+              ? data.recommendations
+              : data.status === "malicious"
+              ? ["Do not visit this site", "Report to authorities"]
+              : ["Site appears safe"],
+          details: {
+            domain: data.domain || (data.url ? new URL(data.url).hostname : undefined),
+            ssl: typeof data.ssl_valid === "boolean" ? data.ssl_valid : undefined,
+            reputation: data.reputation || (data.status === "malicious" ? "Poor" : "Good"),
+            blacklisted: typeof data.blacklisted === "boolean" ? data.blacklisted : undefined,
+            phishingIndicators: Array.isArray(data.indicators) ? data.indicators : [],
+          },
+        }
+        setScanResult(result)
+      } catch (error) {
+        setScanResult({
+          type,
+          content,
+          riskLevel: "suspicious",
+          score: 0,
+          threats: ["Could not reach StalkPhish API"],
+          recommendations: ["Try again later or check your network connection."],
+          details: {},
+        })
+      }
+      setIsScanning(false)
+      return
+    }
+
+    // Fallback for other types (email, sms, phone): use previous mock logic
+    await new Promise((resolve) => setTimeout(resolve, 2000))
     const lowerContent = content.toLowerCase()
     let result: ScanResult
-
-    if (type === "url") {
-      if (
-        lowerContent.includes("phishing") ||
-        lowerContent.includes("scam") ||
-        lowerContent.includes("fake") ||
-        lowerContent.includes("suspicious") ||
-        lowerContent.includes("malicious")
-      ) {
-        result = {
-          type,
-          content,
-          riskLevel: "dangerous",
-          score: 85,
-          threats: ["Phishing attempt detected", "Domain flagged as malicious", "SSL certificate issues"],
-          recommendations: [
-            "Do not visit this website",
-            "Report this URL to authorities",
-            "Block this domain in your browser",
-            "Warn others about this threat",
-          ],
-          details: {
-            domain: new URL(content.startsWith("http") ? content : `https://${content}`).hostname,
-            ssl: false,
-            reputation: "Poor",
-            blacklisted: true,
-            phishingIndicators: ["Suspicious domain name", "No valid SSL certificate", "Recently registered domain"],
-          },
-        }
-      } else {
-        result = {
-          type,
-          content,
-          riskLevel: "safe",
-          score: 15,
-          threats: [],
-          recommendations: [
-            "Website appears safe to visit",
-            "Always verify URLs before entering personal information",
-            "Check for HTTPS encryption",
-          ],
-          details: {
-            domain: new URL(content.startsWith("http") ? content : `https://${content}`).hostname,
-            ssl: true,
-            reputation: "Good",
-            blacklisted: false,
-          },
-        }
-      }
-    } else if (type === "email") {
+    if (type === "email") {
       if (
         lowerContent.includes("urgent") ||
         lowerContent.includes("winner") ||
@@ -207,7 +216,6 @@ export function ScamDetector() {
         }
       }
     }
-
     setScanResult(result)
     setIsScanning(false)
   }

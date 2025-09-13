@@ -73,7 +73,7 @@ export function Dashboard() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-foreground mb-2">
-            {t("welcomeBack")}{username ? `, ${username}` : ""}
+            {t("welcomeBack")}{username}`
           </h2>
           <p className="text-muted-foreground text-lg">{t("continueJourney")}</p>
           <div className="mt-4 flex gap-2 items-center">
