@@ -152,7 +152,7 @@ export function DailyTipsAndAlerts({ language, isExpanded, onToggle }: DailyTips
 
           {/* Trending Alerts Summary */}
           {trendingAlerts.length > 0 && (
-            <Card className="border-2 border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20">
+            <Card className="border-orange-200 bg-orange-50/50 dark:border-orange-800 dark:bg-orange-950/20">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">

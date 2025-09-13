@@ -72,7 +72,6 @@ export function Dashboard() {
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-
           <h2 className="text-3xl font-bold text-foreground mb-2">
             {t("welcomeBack")}{username ? `, ${username}` : ""}
           </h2>
@@ -127,7 +126,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Recent Activity & Enhanced Memes Section */}
+        {/* Recent Activity & Memes Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
@@ -158,7 +157,7 @@ export function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Enhanced Cyber Memes & Tips Section */}
+          {/* Cyber Memes & Tips Section */}
           <div className="space-y-4">
             <Card>
               <CardHeader>

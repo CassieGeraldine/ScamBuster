@@ -3,6 +3,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Blue Theme */
 :root {
   /* Updated color palette from emerald green to blue theme */
   --background: #ffffff;
@@ -11,25 +12,42 @@
   --card-foreground: #374151;
   --popover: #ffffff;
   --popover-foreground: #475569;
+
+  /* Primary: Blue */
   --primary: #2563eb;
   --primary-foreground: #ffffff;
+
+  /* Secondary: Sky Blue */
   --secondary: #3b82f6;
   --secondary-foreground: #ffffff;
+
+  /* Muted: Light gray */
   --muted: #f1f5f9;
   --muted-foreground: #4b5563;
+
+  /* Accent: Sky Blue */
   --accent: #3b82f6;
   --accent-foreground: #ffffff;
+
+  /* Destructive: Red alert */
   --destructive: #e53e3e;
   --destructive-foreground: #ffffff;
+
+  /* Borders and inputs */
   --border: #d1d5db;
   --input: #ffffff;
   --ring: rgba(37, 99, 235, 0.5);
+
+  /* Chart colors - blue themed */
   --chart-1: #2563eb;
   --chart-2: #3b82f6;
   --chart-3: #4b5563;
   --chart-4: #6366f1;
   --chart-5: #e53e3e;
+
   --radius: 0.5rem;
+
+  /* Sidebar colors */
   --sidebar: #f1f5f9;
   --sidebar-foreground: #374151;
   --sidebar-primary: #2563eb;
@@ -48,26 +66,42 @@
   --card-foreground: #f1f5f9;
   --popover: #1e293b;
   --popover-foreground: #f1f5f9;
+
+  /* Primary: Sky Blue */
   --primary: #3b82f6;
   /* Fixed primary-foreground to white for better contrast in dark mode */
   --primary-foreground: #ffffff;
+
+  /* Secondary: Blue */
   --secondary: #2563eb;
   --secondary-foreground: #ffffff;
+
+  /* Muted: Dark gray */
   --muted: #334155;
   --muted-foreground: #94a3b8;
+
+  /* Accent: Sky Blue */
   --accent: #3b82f6;
   /* Fixed accent-foreground to white for better contrast in dark mode */
   --accent-foreground: #ffffff;
+
+  /* Destructive: Red alert */
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
+
+  /* Borders and inputs */
   --border: #334155;
   --input: #1e293b;
   --ring: rgba(59, 130, 246, 0.5);
+
+  /* Chart colors - blue themed */
   --chart-1: #3b82f6;
   --chart-2: #2563eb;
   --chart-3: #94a3b8;
   --chart-4: #8b5cf6;
   --chart-5: #ef4444;
+
+  /* Sidebar colors */
   --sidebar: #1e293b;
   --sidebar-foreground: #f1f5f9;
   --sidebar-primary: #3b82f6;
@@ -80,8 +114,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-roboto-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
